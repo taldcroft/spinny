@@ -37,15 +37,18 @@ wheels = [
         [7, 8, 8, 3, 4, 12, 2, 5, 10, 7, 16, 8],
     ],
 ]
+wheels = np.array(wheels)
 
 
-def spin(offsets: list[int], wheels: list[list[list[int]]]):
+@numba.njit
+def spin(offsets, wheels):
     for col0 in range(12):
         sum = 0
         for row in range(4):
             for offset, wheel in zip(offsets, wheels):
                 col = (col0 + offset) % 12
-                if (val := wheel[row][col]) != 0:
+                val = wheel[row][col]
+                if val != 0:
                     sum += val
                     break
             if sum > 42:
@@ -76,14 +79,14 @@ def get_offsets(wheels):
     offsets_iter = itertools.product(range(12), repeat=len(wheels))
     for ii, offsets in enumerate(offsets_iter):
         if spin(offsets, wheels):
-            print(f"Found solution at iteration {ii} of {12**len(wheels)}")
-            return offsets
+            return ii, offsets
 
-offsets = get_offsets(wheels)
+n_iter, offsets = get_offsets(wheels)
 
 # Wheel 4 does not spin
 doff = 12 - offsets[4]
 offsets = [(offset + doff) % 12 for offset in offsets]
+print(f"Found solution in {n_iter} iterations")
 print(f"offsets = {offsets} (drag counterclockwise)")
 print("Visible wheel")
 vw = get_visible_wheel(offsets)
