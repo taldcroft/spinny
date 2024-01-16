@@ -1,3 +1,4 @@
+use std::env;
 // Basic program to print hello world
 
 // Defined 2-d array of WHEELS
@@ -77,8 +78,11 @@ fn find_meaning_of_life() -> [i32; 5] {
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    let iter: i32 = args[1].parse().unwrap_or(1000);
+
     let mut offsets: [i32; 5] = [0, 0, 0, 0, 0];
-    for _i in 0..1000 {
+    for _i in 0..iter {
         offsets = find_meaning_of_life();
     }
 

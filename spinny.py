@@ -1,4 +1,5 @@
 import itertools
+import sys
 
 import numpy as np
 import numba
@@ -50,7 +51,7 @@ WHEELS = [
 WHEELS = np.array(WHEELS)
 
 
-@numba.njit
+@numba.njit(cache=True)
 def spin_and_check(offsets, wheels):
     """Loop through columns and rows and check that the sum of each column is 42.
 
@@ -90,7 +91,7 @@ def get_visible_wheel(offsets: list[int]):
 
 def find_meaning_of_life(wheels):
     """Brute-force spin the wheels until the answer is found"""
-    # Equivalent to a 5-deep nested for loop
+    # Equivalent to a 4-deep nested for loop
     offsets_iter = itertools.product(range(12), repeat=len(wheels) - 1)
     for ii, offsets4 in enumerate(offsets_iter):
         offsets = offsets4 + (0,)
@@ -99,7 +100,9 @@ def find_meaning_of_life(wheels):
 
 
 def main():
-    n_iter, offsets = find_meaning_of_life(WHEELS)
+    iter = int(sys.argv[1])
+    for _ in range(iter):
+        n_iter, offsets = find_meaning_of_life(WHEELS)
 
     print(f"Found solution in {n_iter} iterations")
     print(f"offsets = {offsets} (drag counterclockwise)")
