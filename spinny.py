@@ -3,7 +3,7 @@ import itertools
 import numpy as np
 import numba
 
-nn = 0  # No number
+NN = 0  # No number
 
 # The wheels are represented as a 5 x 4 x 12 array, where each 4x12 array is a wheel.
 # The wheels are defined in order from top to bottom. For a given row and column on the
@@ -12,30 +12,30 @@ nn = 0  # No number
 # Wheel rotation to a different hour angle is accomplished by adding an offset to the
 # column index and taking mod 12. The offset is the number of hours to rotate
 # counterclockwise.
-wheels = [
+WHEELS = [
     [
-        [nn, 10, nn, 7, nn, 15, nn, 8, nn, 3, nn, 6],
-        [nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn],
-        [nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn],
-        [nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn],
+        [NN, 10, NN, 7, NN, 15, NN, 8, NN, 3, NN, 6],
+        [NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN],
+        [NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN],
+        [NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN],
     ],
     [
-        [7, 3, nn, 6, nn, 11, 11, 6, 11, nn, 6, 17],
-        [4, nn, 7, 15, nn, nn, 14, nn, 9, nn, 12, nn],
-        [nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn],
-        [nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn],
+        [7, 3, NN, 6, NN, 11, 11, 6, 11, NN, 6, 17],
+        [4, NN, 7, 15, NN, NN, 14, NN, 9, NN, 12, NN],
+        [NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN],
+        [NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN],
     ],
     [
-        [4, 5, nn, 7, 8, 9, 13, 9, 7, 13, 21, 17],
-        [26, 14, 1, 12, nn, 21, 6, 15, 4, 9, 18, 11],
-        [nn, 16, nn, 9, nn, 5, nn, 10, nn, 8, nn, 22],
-        [nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn, nn],
+        [4, 5, NN, 7, 8, 9, 13, 9, 7, 13, 21, 17],
+        [26, 14, 1, 12, NN, 21, 6, 15, 4, 9, 18, 11],
+        [NN, 16, NN, 9, NN, 5, NN, 10, NN, 8, NN, 22],
+        [NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN, NN],
     ],
     [
-        [nn, 16, 2, 7, nn, 9, nn, 7, 14, 11, nn, 8],
-        [8, 9, nn, 9, 20, 12, 3, 6, nn, 14, 12, 3],
-        [19, 3, 12, 3, 26, 6, nn, 2, 13, 9, nn, 17],
-        [nn, 10, nn, 1, nn, 9, nn, 12, nn, 6, nn, 10],
+        [NN, 16, 2, 7, NN, 9, NN, 7, 14, 11, NN, 8],
+        [8, 9, NN, 9, 20, 12, 3, 6, NN, 14, 12, 3],
+        [19, 3, 12, 3, 26, 6, NN, 2, 13, 9, NN, 17],
+        [NN, 10, NN, 1, NN, 9, NN, 12, NN, 6, NN, 10],
     ],
     [
         [11, 14, 11, 11, 14, 11, 14, 11, 14, 14, 11, 14],
@@ -44,7 +44,10 @@ wheels = [
         [7, 8, 8, 3, 4, 12, 2, 5, 10, 7, 16, 8],
     ],
 ]
-wheels = np.array(wheels)
+
+# Numba does not support multidimensional lists, so convert to numpy array. For pure
+# Python a list of lists is faster.
+WHEELS = np.array(WHEELS)
 
 
 @numba.njit
@@ -60,7 +63,7 @@ def spin_and_check(offsets, wheels):
             for offset, wheel in zip(offsets, wheels):
                 col = (col0 + offset) % 12
                 val = wheel[row][col]
-                if val != 0:
+                if val != NN:
                     sum += val
                     break
 
@@ -75,9 +78,9 @@ def get_visible_wheel(offsets: list[int]):
     visible_wheel = np.zeros((4, 12), dtype=np.uint8)
     for col0 in range(12):
         for row in range(4):
-            for offset, wheel in zip(offsets, wheels):
+            for offset, wheel in zip(offsets, WHEELS):
                 col = (col0 + offset) % 12
-                if (val := wheel[row][col]) != nn:
+                if (val := wheel[row][col]) != NN:
                     visible_wheel[row][col0] = val
                     break
             else:
@@ -88,18 +91,16 @@ def get_visible_wheel(offsets: list[int]):
 def find_meaning_of_life(wheels):
     """Brute-force spin the wheels until the answer is found"""
     # Equivalent to a 5-deep nested for loop
-    offsets_iter = itertools.product(range(12), repeat=len(wheels))
-    for ii, offsets in enumerate(offsets_iter):
+    offsets_iter = itertools.product(range(12), repeat=len(wheels) - 1)
+    for ii, offsets4 in enumerate(offsets_iter):
+        offsets = offsets4 + (0,)
         if spin_and_check(offsets, wheels):
             return ii, offsets
 
 
 def main():
-    n_iter, offsets = find_meaning_of_life(wheels)
+    n_iter, offsets = find_meaning_of_life(WHEELS)
 
-    # Wheel 4 does not spin
-    doff = 12 - offsets[4]
-    offsets = [(offset + doff) % 12 for offset in offsets]
     print(f"Found solution in {n_iter} iterations")
     print(f"offsets = {offsets} (drag counterclockwise)")
     print("Visible wheel")
