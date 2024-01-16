@@ -78,6 +78,7 @@ fn find_meaning_of_life() -> [i32; 5] {
 }
 
 fn main() {
+    // Got this from CoPilot to allow command line argument for number of iterations
     let args: Vec<String> = env::args().collect();
     let iter: i32 = args[1].parse().unwrap_or(1000);
 
