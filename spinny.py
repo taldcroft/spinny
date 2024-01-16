@@ -5,6 +5,13 @@ import numba
 
 nn = 0  # No number
 
+# The wheels are represented as a 5 x 4 x 12 array, where each 4x12 array is a wheel.
+# The wheels are defined in order from top to bottom. For a given row and column on the
+# toy, search through the wheels in order until a nonzero value is found.
+#
+# Wheel rotation to a different hour angle is accomplished by adding an offset to the
+# column index and taking mod 12. The offset is the number of hours to rotate
+# counterclockwise.
 wheels = [
     [
         [nn, 10, nn, 7, nn, 15, nn, 8, nn, 3, nn, 6],
@@ -41,7 +48,12 @@ wheels = np.array(wheels)
 
 
 @numba.njit
-def spin(offsets, wheels):
+def spin_and_check(offsets, wheels):
+    """Loop through columns and rows and check that the sum of each column is 42.
+
+    Loop first through columns, then rows, then wheels. If the sum for a given column
+    is not 42, then the offset is not a solution.
+    """
     for col0 in range(12):
         sum = 0
         for row in range(4):
@@ -51,16 +63,15 @@ def spin(offsets, wheels):
                 if val != 0:
                     sum += val
                     break
-            if sum > 42:
-                break
-        else:
-            if sum != 42:
-                return False
+
+        if sum != 42:
+            return False
+
     return True
 
 
 def get_visible_wheel(offsets: list[int]):
-    """print the wheel that is visible from the front"""
+    """Print the wheel that is visible from the top"""
     visible_wheel = np.zeros((4, 12), dtype=np.uint8)
     for col0 in range(12):
         for row in range(4):
@@ -74,23 +85,30 @@ def get_visible_wheel(offsets: list[int]):
     return visible_wheel
 
 
-def get_offsets(wheels):
+def find_meaning_of_life(wheels):
+    """Brute-force spin the wheels until the answer is found"""
     # Equivalent to a 5-deep nested for loop
     offsets_iter = itertools.product(range(12), repeat=len(wheels))
     for ii, offsets in enumerate(offsets_iter):
-        if spin(offsets, wheels):
+        if spin_and_check(offsets, wheels):
             return ii, offsets
 
-n_iter, offsets = get_offsets(wheels)
 
-# Wheel 4 does not spin
-doff = 12 - offsets[4]
-offsets = [(offset + doff) % 12 for offset in offsets]
-print(f"Found solution in {n_iter} iterations")
-print(f"offsets = {offsets} (drag counterclockwise)")
-print("Visible wheel")
-vw = get_visible_wheel(offsets)
-print(vw)
-print()
-print("Sum of each column")
-print(np.sum(vw, axis=0))
+def main():
+    n_iter, offsets = find_meaning_of_life(wheels)
+
+    # Wheel 4 does not spin
+    doff = 12 - offsets[4]
+    offsets = [(offset + doff) % 12 for offset in offsets]
+    print(f"Found solution in {n_iter} iterations")
+    print(f"offsets = {offsets} (drag counterclockwise)")
+    print("Visible wheel")
+    vw = get_visible_wheel(offsets)
+    print(vw)
+    print()
+    print("Sum of each column")
+    print(np.sum(vw, axis=0))
+
+
+if __name__ == "__main__":
+    main()
