@@ -34,22 +34,21 @@ const WHEELS: [[[i32; 12]; 4]; 5] = [
     ],
 ];
 
-fn spin(offsets: [i32; 5]) -> bool {
+fn spin_and_check(offsets: [i32; 5]) -> bool {
+    let mut sum;
+    let mut val;
+    let mut col;
+
     for col0 in 0..12 {
-        let mut sum = 0;
+        sum = 0;
         for row in 0..4 {
             for iw in 0..5 {
-                let offset = offsets[iw];
-                let wheel = WHEELS[iw];
-                let col = (col0 + offset) % 12;
-                let val = wheel[row][col as usize];
+                col = (col0 + offsets[iw]) % 12;
+                val = WHEELS[iw][row][col as usize];
                 if val != 0 {
                     sum += val;
                     break;
                 }
-            }
-            if sum > 42 {
-                break;
             }
         }
         if sum != 42 {
@@ -59,15 +58,15 @@ fn spin(offsets: [i32; 5]) -> bool {
     return true;
 }
 
-fn get_offsets() -> [i32; 5] {
-    // let mut offsets: [i32;5] = [0, 0, 0, 0, 0];
+fn find_meaning_of_life() -> [i32; 5] {
+    let mut offsets: [i32;5];
     for i0 in 0..12 {
         for i1 in 0..12 {
             for i2 in 0..12 {
                 for i3 in 0..12 {
                     for i4 in 0..12 {
-                        let offsets = [i0, i1, i2, i3, i4];
-                        if spin(offsets) {
+                        offsets = [i0, i1, i2, i3, i4];
+                        if spin_and_check(offsets) {
                             return offsets;
                         }
                     }
@@ -82,7 +81,7 @@ fn main() {
     // define out as [i32;5]
     let mut out: [i32; 5] = [0, 0, 0, 0, 0];
     for _i in 0..1000 {
-        out = get_offsets();
+        out = find_meaning_of_life();
     }
     println!("{} {} {} {} {}", out[0], out[1], out[2], out[3], out[4]);
 }
